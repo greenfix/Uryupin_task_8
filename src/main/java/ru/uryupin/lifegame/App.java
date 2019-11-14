@@ -1,26 +1,18 @@
 package ru.uryupin.lifegame;
 
-
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
-/**
- * Hello world!
- */
 public class App {
 
     private static final byte NUM_ARGS = 3;
 
-    private static final String IN_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\in.txt";
-    private static final String OUT_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\out.txt";
+    //private static final String IN_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\in.txt";
+    //private static final String OUT_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\out.txt";
 
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
 
-        if (args.length != NUM_ARGS) {
+        if (args.length < NUM_ARGS) {
             System.out.println("Not enough parameters");
             System.exit(-1);
         }

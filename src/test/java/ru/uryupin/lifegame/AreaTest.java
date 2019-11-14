@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
 
@@ -16,15 +17,15 @@ public class AreaTest {
     private static final String OUT_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\out.txt";
 
     @Test
-    public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException, InterruptedException, ExecutionException {
 
         Area area = new Area();
         String[] text;
 
-        char fill = Area.FILLED_CELL_SYMBOL;
+        //char fill = Area.FILLED_CELL_SYMBOL;
         char empty = Area.EMPTY_CELL_SYMBOL;
 
-        text = new String[5]; // 10 x 5
+        text = new String[5];
         text[0] = ".....";
         text[1] = ".....";
         text[2] = ".XXX.";
@@ -191,7 +192,7 @@ public class AreaTest {
     }
 
     @Test
-    public void TimeLifeTest() throws InterruptedException {
+    public void TimeLifeTest() throws InterruptedException, ExecutionException {
         String[] text;
 
         text = new String[1000];
@@ -220,7 +221,7 @@ public class AreaTest {
         noThreadsTime = showCompare(0, 1, 0);
         showCompare(1, 1, noThreadsTime);
         System.out.println("-----------------------------------------------");
-        iteration = 200;
+        iteration = 2000;
         noThreadsTime = showCompare(0, iteration, 0);
         showCompare(100, iteration, noThreadsTime);
         showCompare(10, iteration, noThreadsTime);
@@ -237,7 +238,7 @@ public class AreaTest {
      * @return Operation time
      * @throws InterruptedException InterruptedException
      */
-    private static long showCompare(int th, int iteration, long noThreadsTime) throws InterruptedException {
+    private static long showCompare(int th, int iteration, long noThreadsTime) throws InterruptedException, ExecutionException {
         Area area = new Area();
         area.fileToStore(IN_FILE);
         long start = System.currentTimeMillis();

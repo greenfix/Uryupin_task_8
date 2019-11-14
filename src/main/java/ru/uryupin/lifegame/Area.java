@@ -3,6 +3,10 @@ package ru.uryupin.lifegame;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 class Area {
 
@@ -58,28 +62,30 @@ class Area {
      * @param threads number of threads
      * @return this
      */
-    Area calculateMove(int step, int threads) throws InterruptedException {
+    Area calculateMove(int step, int threads) throws InterruptedException, ExecutionException {
 
         List<PairStarts> pairStarts = Area.calculateStart(height, threads);
-        List<Thread> threadList = new ArrayList<>();
+        List<Future> futureList = new ArrayList<>();
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(threads);
 
         for (int s = 1; s <= step; s++) {
 
             for (PairStarts pair : pairStarts) {
-                threadList.add(new Thread(new ThreadBox(this, pair.getStart(), pair.getOffset())));
+                futureList.add(threadPool.submit(new ThreadBox(this, pair.getStart(), pair.getOffset())));
             }
 
-            for (Thread threadEach : threadList
-            ) {
-                threadEach.start();
-                threadEach.join();
+            for (Future futureEach : futureList) {
+                futureEach.get();
             }
 
-            threadList.clear();
+            futureList.clear();
             tempStore = firstStore;
             firstStore = lastStore;
             lastStore = tempStore;
         }
+
+        threadPool.shutdown();
 
         return this;
     }
@@ -180,7 +186,6 @@ class Area {
                 width = Math.max(width, line.length());
                 ++height;
                 line = reader.readLine();
-
             }
             firstStore = new byte[width * height];
             lastStore = new byte[width * height];
@@ -203,7 +208,6 @@ class Area {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             int keyHeight = 0;
             int emptyCode = EMPTY_CELL_SYMBOL;
-            byte[] fullLine = new byte[width];
             byte[] shortLine;
             int lenShortLine;
             String line = reader.readLine();
@@ -211,14 +215,8 @@ class Area {
                 shortLine = line.getBytes();
                 lenShortLine = shortLine.length;
                 for (int i = 0; i < width; i++) {
-                    if (lenShortLine > i) {
-                        fullLine[i] = shortLine[i];
-                    } else {
-                        fullLine[i] = (byte) emptyCode;
-                    }
-                }
-                for (int i = 0; i < width; i++) {
-                    firstStore[i + keyHeight * width] = (fullLine[i] == emptyCode) ? (byte) 0 : (byte) 1;
+                    firstStore[i + keyHeight * width] = ((lenShortLine > i ? shortLine[i] :
+                            (byte) emptyCode) == emptyCode) ? (byte) 0 : (byte) 1;
                 }
                 keyHeight++;
                 line = reader.readLine();
@@ -245,17 +243,21 @@ class Area {
         int testPlaceY;
         for (int j = -1; j < 2; j++) {
             for (int i = -1; i < 2; i++) {
+
                 if (i == 0 && j == 0) {
                     continue;
                 }
+
                 testPlaceX = (x + i) % width;
                 if (testPlaceX < 0) {
                     testPlaceX = width - 1;
                 }
+
                 testPlaceY = ((y + j) % height) * width;
                 if (testPlaceY < 0) {
                     testPlaceY = (height - 1) * width;
                 }
+
                 neighbour += firstStore[testPlaceX + testPlaceY];
             }
         }
