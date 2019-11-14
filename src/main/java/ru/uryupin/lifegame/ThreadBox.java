@@ -1,5 +1,7 @@
 package ru.uryupin.lifegame;
 
+import java.util.stream.IntStream;
+
 public class ThreadBox implements Runnable {
 
     private Area area;
@@ -16,10 +18,8 @@ public class ThreadBox implements Runnable {
     public void run() {
         int width = area.getWidth();
         byte[] lastStore = area.getLastStore();
-        for (int i = from; i < (from + offset); i++) {
-            for (int j = 0; j < width; j++) {
-                lastStore[j + i * width] = area.getFortune(j, i);
-            }
-        }
+        IntStream.range(from, from + offset).
+                forEach(i -> IntStream.range(0, width).
+                        forEach(j -> lastStore[j + i * width] = area.getFortune(j, i)));
     }
 }

@@ -1,8 +1,5 @@
 package ru.uryupin.lifegame;
 
-/**
- *
- */
 class PairStarts {
 
     private int start;
@@ -14,10 +11,12 @@ class PairStarts {
     }
 
     int getStart() {
+
         return start;
     }
 
     int getOffset() {
+
         return offset;
     }
 }

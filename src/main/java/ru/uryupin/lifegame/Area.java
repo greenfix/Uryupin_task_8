@@ -7,10 +7,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class Area {
 
-    static final char FILLED_CELL_SYMBOL = '0';
+    private static final char FILLED_CELL_SYMBOL = '0';
     static final char EMPTY_CELL_SYMBOL = '.';
 
     private byte[] firstStore;
@@ -24,6 +26,7 @@ class Area {
     }
 
     byte[] getLastStore() {
+
         return lastStore;
     }
 
@@ -38,15 +41,10 @@ class Area {
      * @return this
      */
     Area calculateMoveSingle(int step) {
-
-        for (int s = 1; s <= step; s++) {
-
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    lastStore[j + i * width] = getFortune(j, i);
-                }
-            }
-
+        for (int s = 0; s < step; s++) {
+            int bound = height;
+            IntStream.range(0, bound).forEach(i -> IntStream.range(0, width).
+                    forEach(j -> lastStore[j + i * width] = getFortune(j, i)));
             tempStore = firstStore;
             firstStore = lastStore;
             lastStore = tempStore;
@@ -62,28 +60,30 @@ class Area {
      * @param threads number of threads
      * @return this
      */
-    Area calculateMove(int step, int threads) throws InterruptedException, ExecutionException {
+    Area calculateMove(int step, int threads) {
 
         List<PairStarts> pairStarts = Area.calculateStart(height, threads);
         List<Future> futureList = new ArrayList<>();
 
         ExecutorService threadPool = Executors.newFixedThreadPool(threads);
 
-        for (int s = 1; s <= step; s++) {
-
-            for (PairStarts pair : pairStarts) {
-                futureList.add(threadPool.submit(new ThreadBox(this, pair.getStart(), pair.getOffset())));
-            }
-
-            for (Future futureEach : futureList) {
-                futureEach.get();
-            }
+        IntStream.range(0, step).forEach(s -> {
+            pairStarts.forEach((x) ->
+                    futureList.add(threadPool.submit(new ThreadBox(this, x.getStart(), x.getOffset()))));
+            futureList.forEach(x -> {
+                try {
+                    x.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            });
 
             futureList.clear();
             tempStore = firstStore;
             firstStore = lastStore;
             lastStore = tempStore;
-        }
+
+        });
 
         threadPool.shutdown();
 
@@ -99,47 +99,34 @@ class Area {
      */
     static List<PairStarts> calculateStart(int height, int threads) {
         List<PairStarts> resultList = new ArrayList<>();
-
-        if (height == 0 || threads == 0) {
-            return resultList;
-        }
-
         int stripLen;
         int stripLenLast;
-
+        if ((height | threads) == 0) {
+            return resultList;
+        }
         if (threads >= height) {
-
-            for (int i = 0; i < height; i++) {
-                resultList.add(new PairStarts(i, 1));
-            }
-
+            resultList = IntStream.range(0, height).mapToObj(i -> new PairStarts(i, 1)).collect(Collectors.toList());
         } else {
-
             stripLen = height / threads;
             stripLenLast = height % threads;
             int residual;
             int delta = 0;
-
             for (int i = 0; i < (threads); i++) {
-                if (stripLenLast != 0) {
-                    residual = 1;
-                } else {
-                    residual = 0;
-                }
+                residual = (stripLenLast != 0) ? 1 : 0;
+
                 resultList.add(new PairStarts(stripLen * i + delta, stripLen + residual));
                 if (stripLenLast != 0) {
                     delta += 1;
                     stripLenLast--;
                 }
             }
-
         }
 
         return resultList;
     }
 
     /**
-     * Сopy the contents of the processing buffer to the output file
+     * Save the contents of the processing buffer to the output file
      *
      * @param fileOutPath Full path to the output file
      */
@@ -241,26 +228,28 @@ class Area {
         byte neighbour = 0;
         int testPlaceX;
         int testPlaceY;
-        for (int j = -1; j < 2; j++) {
-            for (int i = -1; i < 2; i++) {
 
-                if (i == 0 && j == 0) {
+        for (int j1 = -1; j1 < 2; j1++)
+            for (int i1 = -1; i1 < 2; i1++) {
+
+                if ((i1 | j1) == 0) {
                     continue;
                 }
 
-                testPlaceX = (x + i) % width;
+                testPlaceX = (x + i1) % width;
+                testPlaceY = ((y + j1) % height) * width;
+
                 if (testPlaceX < 0) {
                     testPlaceX = width - 1;
                 }
 
-                testPlaceY = ((y + j) % height) * width;
                 if (testPlaceY < 0) {
                     testPlaceY = (height - 1) * width;
                 }
 
                 neighbour += firstStore[testPlaceX + testPlaceY];
             }
-        }
+
         if (firstStore[x + y * width] == 0) {
             if (neighbour == 3) {
                 return 1;
@@ -268,7 +257,7 @@ class Area {
                 return 0;
             }
         } else {
-            if (neighbour > 3 || neighbour < 2) {
+            if (neighbour < 2 || neighbour > 3) {
                 return 0;
             } else {
                 return 1;

@@ -2,27 +2,31 @@ package ru.uryupin.lifegame;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
 
-
 public class AreaTest {
 
-    private static final String IN_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\in.txt";
-    private static final String OUT_FILE = "C:\\Users\\conrg\\IdeaProjects\\stc_21_task_8\\out.txt";
+    private static String IN_FILE;
+    private static String OUT_FILE;
+
+    public AreaTest() {
+        String path = new File(new File(".").getAbsolutePath()).getAbsolutePath();
+        IN_FILE = path + "\\src\\test\\resources\\in.txt";
+        OUT_FILE = path + "\\src\\test\\resources\\out.txt";
+    }
 
     @Test
-    public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException, InterruptedException, ExecutionException {
+    public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException {
 
         Area area = new Area();
         String[] text;
 
-        //char fill = Area.FILLED_CELL_SYMBOL;
         char empty = Area.EMPTY_CELL_SYMBOL;
 
         text = new String[5];
@@ -192,7 +196,7 @@ public class AreaTest {
     }
 
     @Test
-    public void TimeLifeTest() throws InterruptedException, ExecutionException {
+    public void TimeLifeTest() {
         String[] text;
 
         text = new String[1000];
@@ -236,9 +240,8 @@ public class AreaTest {
      * @param iteration     Number of iterations
      * @param noThreadsTime Operation time
      * @return Operation time
-     * @throws InterruptedException InterruptedException
      */
-    private static long showCompare(int th, int iteration, long noThreadsTime) throws InterruptedException, ExecutionException {
+    private static long showCompare(int th, int iteration, long noThreadsTime) {
         Area area = new Area();
         area.fileToStore(IN_FILE);
         long start = System.currentTimeMillis();
