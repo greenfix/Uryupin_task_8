@@ -12,8 +12,10 @@ public class App {
         }
 
         Area area = new Area();
+
         area.fileToStore(args[0]).
                 calculateMove(Integer.parseInt(args[2]), 2).
                 storeToFile(args[1]);
+
     }
 }

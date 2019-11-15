@@ -8,19 +8,21 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
 public class AreaTest {
 
     private static String path = new File(new File(".").getAbsolutePath()).getAbsolutePath();
+
     private static final String IN_FILE = path + "\\src\\test\\resources\\in.txt";
     private static final String OUT_FILE = path + "\\src\\test\\resources\\out.txt";
 
-    public AreaTest() {
-    }
+    private static final int AREA_WIDTH = 1000;
+    private static final int AREA_HEIGHT = 1000;
 
-    @Test
+    //    @Test
     public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException {
 
         Area area = new Area();
@@ -129,7 +131,7 @@ public class AreaTest {
         area.fileToStore(IN_FILE).calculateMoveSingle(1).storeToFile(OUT_FILE);
     }
 
-    @Test
+    //    @Test
     public void calculateStartsTest() {
         List<PairStarts> startList = Area.calculateStart(0, 0);
         assertEquals(startList.size(), 0);
@@ -194,11 +196,52 @@ public class AreaTest {
 
     }
 
+//    @Test
+    public void MultiTest() throws InterruptedException {
+        String[] text;
+        text = new String[AREA_HEIGHT];
+        text[0] = "...............................................";
+        text[1] = "..................................................";
+        text[2] = "..................................................";
+        text[3] = "..................................................";
+        text[4] = "..................................................";
+        text[5] =  ".......00000000...................................";
+        text[6] =  ".......0.0000.0..................................";
+        text[7] =  ".......00000000.....................................";
+        text[8] =  "....................................................";
+        text[9] =  "...........................0....00000000.........";
+        text[10] = "..........................00....0.0000.0...........";
+        text[11] = "..........................0.0...00000000...............";
+//    text[0] = "...............................................";
+//        text[1] = ".....00.00.00.00.00.00.00.........................";
+//        text[2] = ".....00.00.00.00.00.00.00.........................";
+//        text[3] = ".................................................";
+//        text[4] = ".....00.00.00.00.00.00.00...........................";
+//        text[5] = ".....00.00.00.00.00.00.00...........................";
+//        text[6] = "...........0......................................";
+//        text[7] = ".....00.00.00.00.00.00.00...........................";
+//        text[8] = ".....00.00.00.00.00.00.00...............................";
+        text[12] = new String(new char[AREA_WIDTH]).replace('\0', Area.EMPTY_CELL_SYMBOL);
+        for (int i = 13; i < AREA_HEIGHT; i++) {
+            text[i] = ".";
+        }
+        saveFile(text);
+
+        Area area = new Area();
+        for (int i = 0; i < 1000; i++) {
+            area.fileToStore(IN_FILE);
+            area.calculateMove(1, 2);
+            area.storeToFile(IN_FILE);
+            area.storeToFile(OUT_FILE);
+            TimeUnit.MILLISECONDS.sleep(500);
+        }
+    }
+
     @Test
     public void TimeLifeTest() {
         String[] text;
 
-        text = new String[1000];
+        text = new String[AREA_HEIGHT];
         text[0] = ".....0.........................";
         text[1] = "......0..............0............................";
         text[2] = "....000...............0...........................";
@@ -208,9 +251,9 @@ public class AreaTest {
         text[6] = ".........................................00.......";
         text[7] = ".";
         text[8] = ".";
-        text[9] = "...................................................................................................";
-        for (int i = 10; i < 1000; i++) {
-            text[i] = "..................................................";
+        text[9] = new String(new char[AREA_WIDTH]).replace('\0', Area.EMPTY_CELL_SYMBOL);
+        for (int i = 10; i < AREA_HEIGHT; i++) {
+            text[i] = ".";
         }
         saveFile(text);
 
@@ -229,7 +272,7 @@ public class AreaTest {
         showCompare(5, iteration, noThreadsTime);
         showCompare(2, iteration, noThreadsTime);
         System.out.println("-----------------------------------------------");
-        iteration = 2000;
+        iteration = 1000;
         noThreadsTime = showCompare(0, iteration, 0);
         showCompare(100, iteration, noThreadsTime);
         showCompare(10, iteration, noThreadsTime);

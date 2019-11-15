@@ -105,11 +105,9 @@ class Area {
         } else {
             stripLen = height / threads;
             stripLenLast = height % threads;
-            int residual;
             int delta = 0;
             for (int i = 0; i < (threads); i++) {
-                residual = (stripLenLast != 0) ? 1 : 0;
-                resultList.add(new PairStarts(stripLen * i + delta, stripLen + residual));
+                resultList.add(new PairStarts(stripLen * i + delta, stripLen + (stripLenLast != 0 ? 1 : 0)));
                 if (stripLenLast != 0) {
                     delta += 1;
                     stripLenLast--;
@@ -165,11 +163,10 @@ class Area {
     /**
      * Determine the length and width of the processing matrix and store it in class variables
      *
-     * @param fileInPath File input
+     * @param fileInPath Full path to the input file
      */
     private void determineSizeArea(String fileInPath) {
         File file = new File(fileInPath);
-        width = 0;
         height = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = reader.readLine();
@@ -192,14 +189,15 @@ class Area {
     /**
      * Fill the processing matrix with data from the file
      *
-     * @param fileInPath File input
+     * @param fileInPath Full path to the input file
      */
     private void loadContent(String fileInPath) {
         File file = new File(fileInPath);
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int keyHeight = 0;
             byte[] shortLine;
+            int keyHeight = 0;
             int lenShortLine;
+
             String line = reader.readLine();
             while (line != null) {
                 shortLine = line.getBytes();
@@ -211,6 +209,7 @@ class Area {
                 keyHeight++;
                 line = reader.readLine();
             }
+
         } catch (FileNotFoundException e) {
             System.out.println("Input file not found");
             System.exit(-1);
