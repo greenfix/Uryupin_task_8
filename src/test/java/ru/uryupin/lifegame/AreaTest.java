@@ -19,8 +19,8 @@ public class AreaTest {
     private static final String IN_FILE = path + "\\src\\test\\resources\\in.txt";
     private static final String OUT_FILE = path + "\\src\\test\\resources\\out.txt";
 
-    private static final int AREA_WIDTH = 1000;
-    private static final int AREA_HEIGHT = 1000;
+    private static final int AREA_WIDTH = 500;
+    private static final int AREA_HEIGHT = 500;
 
     //    @Test
     public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException {
