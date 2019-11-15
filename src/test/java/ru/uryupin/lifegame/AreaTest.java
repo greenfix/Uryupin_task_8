@@ -9,12 +9,11 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.*;
 
 public class AreaTest {
 
-    private static String path = new File(new File(".").getAbsolutePath()).getAbsolutePath();
+    private static final String path = new File(new File(".").getAbsolutePath()).getAbsolutePath();
 
     private static final String IN_FILE = path + "\\src\\test\\resources\\in.txt";
     private static final String OUT_FILE = path + "\\src\\test\\resources\\out.txt";
@@ -24,7 +23,6 @@ public class AreaTest {
 
     //    @Test
     public void AreaCreateTest() throws NoSuchFieldException, IllegalAccessException {
-
         Area area = new Area();
         String[] text;
 

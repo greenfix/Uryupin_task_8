@@ -2,11 +2,11 @@ package ru.uryupin.lifegame;
 
 import java.util.stream.IntStream;
 
-public class ThreadBox implements Runnable {
+class ThreadBox implements Runnable {
 
-    private Area area;
-    private int from;
-    private int offset;
+    private final Area area;
+    private final int from;
+    private final int offset;
 
     ThreadBox(Area area, int from, int offset) {
         this.area = area;

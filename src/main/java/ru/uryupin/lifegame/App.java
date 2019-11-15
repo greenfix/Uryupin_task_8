@@ -1,6 +1,6 @@
 package ru.uryupin.lifegame;
 
-public class App {
+class App {
 
     private static final byte NUM_ARGS = 3;
 

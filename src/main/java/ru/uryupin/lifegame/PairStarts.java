@@ -2,8 +2,8 @@ package ru.uryupin.lifegame;
 
 class PairStarts {
 
-    private int start;
-    private int offset;
+    private final int start;
+    private final int offset;
 
     PairStarts(int start, int offset) {
         this.start = start;
