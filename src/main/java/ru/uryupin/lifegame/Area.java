@@ -22,16 +22,19 @@ class Area {
     private int width;
     private int height;
 
-    Area() {
-    }
-
     byte[] getLastStore() {
 
         return lastStore;
     }
 
     int getWidth() {
+
         return width;
+    }
+
+    int getHeight() {
+
+        return height;
     }
 
     /**
@@ -41,15 +44,13 @@ class Area {
      * @return this
      */
     Area calculateMoveSingle(int step) {
-        for (int s = 0; s < step; s++) {
-            int bound = height;
-            IntStream.range(0, bound).forEach(i -> IntStream.range(0, width).
+        IntStream.range(0, step).forEach(s -> {
+            IntStream.range(0, height).forEach(i -> IntStream.range(0, width).
                     forEach(j -> lastStore[j + i * width] = getFortune(j, i)));
             tempStore = firstStore;
             firstStore = lastStore;
             lastStore = tempStore;
-        }
-
+        });
         return this;
     }
 
@@ -61,12 +62,9 @@ class Area {
      * @return this
      */
     Area calculateMove(int step, int threads) {
-
         List<PairStarts> pairStarts = Area.calculateStart(height, threads);
         List<Future> futureList = new ArrayList<>();
-
         ExecutorService threadPool = Executors.newFixedThreadPool(threads);
-
         IntStream.range(0, step).forEach(s -> {
             pairStarts.forEach((x) ->
                     futureList.add(threadPool.submit(new ThreadBox(this, x.getStart(), x.getOffset()))));
@@ -77,14 +75,11 @@ class Area {
                     e.printStackTrace();
                 }
             });
-
             futureList.clear();
             tempStore = firstStore;
             firstStore = lastStore;
             lastStore = tempStore;
-
         });
-
         threadPool.shutdown();
 
         return this;
@@ -105,7 +100,8 @@ class Area {
             return resultList;
         }
         if (threads >= height) {
-            resultList = IntStream.range(0, height).mapToObj(i -> new PairStarts(i, 1)).collect(Collectors.toList());
+            resultList = IntStream.range(0, height).
+                    mapToObj(i -> new PairStarts(i, 1)).collect(Collectors.toList());
         } else {
             stripLen = height / threads;
             stripLenLast = height % threads;
@@ -113,7 +109,6 @@ class Area {
             int delta = 0;
             for (int i = 0; i < (threads); i++) {
                 residual = (stripLenLast != 0) ? 1 : 0;
-
                 resultList.add(new PairStarts(stripLen * i + delta, stripLen + residual));
                 if (stripLenLast != 0) {
                     delta += 1;
@@ -133,12 +128,20 @@ class Area {
     void storeToFile(String fileOutPath) {
         File file = new File(fileOutPath);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    writer.write((firstStore[j + i * width] == 0) ? EMPTY_CELL_SYMBOL : FILLED_CELL_SYMBOL);
+            IntStream.range(0, height).forEach(i -> {
+                IntStream.range(0, width).forEach(j -> {
+                    try {
+                        writer.write((firstStore[j + i * width] == 0) ? EMPTY_CELL_SYMBOL : FILLED_CELL_SYMBOL);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                try {
+                    writer.write("\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                writer.write("\n");
-            }
+            });
         } catch (IOException e) {
             System.out.println("Output input error");
             System.exit(-1);
@@ -153,8 +156,9 @@ class Area {
      * @return this
      */
     Area fileToStore(String fileInPath) {
-        getSizeArea(fileInPath);
+        determineSizeArea(fileInPath);
         loadContent(fileInPath);
+
         return this;
     }
 
@@ -163,7 +167,7 @@ class Area {
      *
      * @param fileInPath File input
      */
-    private void getSizeArea(String fileInPath) {
+    private void determineSizeArea(String fileInPath) {
         File file = new File(fileInPath);
         width = 0;
         height = 0;
@@ -194,7 +198,6 @@ class Area {
         File file = new File(fileInPath);
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             int keyHeight = 0;
-            int emptyCode = EMPTY_CELL_SYMBOL;
             byte[] shortLine;
             int lenShortLine;
             String line = reader.readLine();
@@ -202,8 +205,8 @@ class Area {
                 shortLine = line.getBytes();
                 lenShortLine = shortLine.length;
                 for (int i = 0; i < width; i++) {
-                    firstStore[i + keyHeight * width] = ((lenShortLine > i ? shortLine[i] :
-                            (byte) emptyCode) == emptyCode) ? (byte) 0 : (byte) 1;
+                    firstStore[i + keyHeight * width] = (((lenShortLine > i) ? shortLine[i] :
+                            EMPTY_CELL_SYMBOL) == EMPTY_CELL_SYMBOL) ? 0 : (byte) 1;
                 }
                 keyHeight++;
                 line = reader.readLine();

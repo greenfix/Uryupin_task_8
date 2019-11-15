@@ -6,19 +6,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class AreaTest {
 
-    private static String IN_FILE;
-    private static String OUT_FILE;
+    private static String path = new File(new File(".").getAbsolutePath()).getAbsolutePath();
+    private static final String IN_FILE = path + "\\src\\test\\resources\\in.txt";
+    private static final String OUT_FILE = path + "\\src\\test\\resources\\out.txt";
 
     public AreaTest() {
-        String path = new File(new File(".").getAbsolutePath()).getAbsolutePath();
-        IN_FILE = path + "\\src\\test\\resources\\in.txt";
-        OUT_FILE = path + "\\src\\test\\resources\\out.txt";
     }
 
     @Test
@@ -201,29 +200,34 @@ public class AreaTest {
 
         text = new String[1000];
         text[0] = ".....0.........................";
-        text[1] = "......0...........................................";
-        text[2] = "....000...........................................";
-        text[3] = "..................................................";
+        text[1] = "......0..............0............................";
+        text[2] = "....000...............0...........................";
+        text[3] = "....................000.........................";
         text[4] = "..........................................0.......";
         text[5] = "........................................0.0.......";
         text[6] = ".........................................00.......";
-        text[7] = "..................................................";
-        text[8] = "..................................................";
-        text[9] = "..................................................";
+        text[7] = ".";
+        text[8] = ".";
+        text[9] = "...................................................................................................";
         for (int i = 10; i < 1000; i++) {
             text[i] = "..................................................";
         }
         saveFile(text);
 
+        Area area = new Area().fileToStore(IN_FILE);
+        System.out.println("Area dimensions: " + area.getWidth() + " X " + area.getHeight());
+
+        long noThreadsTime = showCompare(0, 1, 0);
+        showCompare(1, 1, noThreadsTime);
+        showCompare(1, 10, noThreadsTime);
+        showCompare(1, 100, noThreadsTime);
+        System.out.println("-----------------------------------------------");
         int iteration = 10;
-        long noThreadsTime = showCompare(0, iteration, 0);
+        noThreadsTime = showCompare(0, iteration, 0);
         showCompare(100, iteration, noThreadsTime);
         showCompare(10, iteration, noThreadsTime);
         showCompare(5, iteration, noThreadsTime);
         showCompare(2, iteration, noThreadsTime);
-        System.out.println("-----------------------------------------------");
-        noThreadsTime = showCompare(0, 1, 0);
-        showCompare(1, 1, noThreadsTime);
         System.out.println("-----------------------------------------------");
         iteration = 2000;
         noThreadsTime = showCompare(0, iteration, 0);
@@ -276,11 +280,13 @@ public class AreaTest {
      */
     private void saveFile(String[] text) {
         try (FileWriter writer = new FileWriter(AreaTest.IN_FILE, false)) {
-            for (String line : text
-            ) {
-                writer.write(line);
-                writer.write("\n");
-            }
+            Arrays.stream(text).forEach(line -> {
+                try {
+                    writer.write(line + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
             writer.flush();
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
